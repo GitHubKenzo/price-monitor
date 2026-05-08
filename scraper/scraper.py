@@ -1,10 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
+import re
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
-
 
 def fetch_price(url: str) -> int:
     res = requests.get(url, headers=HEADERS, timeout=10)
@@ -12,32 +12,24 @@ def fetch_price(url: str) -> int:
 
     soup = BeautifulSoup(res.text, "html.parser")
 
-    selectors = [
-        ".elPrice",          # 通常価格
-        ".elPriceNumber",    # 数値のみ
-        ".elPriceValue",     # 別パターン
-        ".elPrice__value",   # 新UI
-    ]
+    # 1. よくある価格クラス（部分一致）
+    candidates = soup.select('[class*="Price"], [class*="price"], [class*="Value"], [class*="value"]')
 
-    price_text = None
+    # 2. itemprop="price"
+    candidates += soup.select('[itemprop="price"]')
 
-    for sel in selectors:
-        el = soup.select_one(sel)
-        if el and el.text.strip():
-            price_text = el.text.strip()
-            break
+    # 3. metaタグのprice
+    meta_price = soup.select_one('meta[itemprop="price"]')
+    if meta_price and meta_price.get("content"):
+        digits = re.sub(r"\D", "", meta_price["content"])
+        if digits.isdigit():
+            return int(digits)
 
-    if not price_text:
-        raise ValueError("価格情報が取得できませんでした")
+    # 4. テキスト抽出
+    for el in candidates:
+        text = el.get_text(strip=True)
+        digits = re.sub(r"\D", "", text)
+        if digits.isdigit():
+            return int(digits)
 
-    digits = (
-        price_text.replace(",", "")
-        .replace("円", "")
-        .replace("税込", "")
-        .strip()
-    )
-
-    if not digits.isdigit():
-        raise ValueError(f"価格の数値化に失敗しました: {price_text}")
-
-    return int(digits)
+    raise ValueError("価格情報が取得できませんでした")
