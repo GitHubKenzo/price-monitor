@@ -2,23 +2,12 @@ version: "3.8"
 
 services:
   scraper:
-    build: ./scraper
-    depends_on:
-      - db
+    build: .
+    container_name: price-monitor-scraper
     volumes:
-      - ./scraper:/app
-    command: ["python", "main.py"]
-
-  db:
-    image: postgres:15
+      - ./scraper:/app/scraper
+      - ./data:/app/data
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: price_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
-volumes:
-  db_data:
+      - TZ=Asia/Tokyo
+      # LINE_NOTIFY_TOKEN=xxxxx を使う場合はここに追加
+      # - LINE_NOTIFY_TOKEN=YOUR_TOKEN
