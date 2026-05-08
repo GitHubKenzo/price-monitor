@@ -1,0 +1,4 @@
+data/
+scraper/__pycache__/
+*.pyc
+
