@@ -3,12 +3,13 @@ FROM python:3.10-slim
 WORKDIR /app
 
 COPY scraper/requirements.txt .
-
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY scraper/ ./scraper/
-COPY data/ ./data/
+COPY ./scraper /app/scraper
+COPY ./db /app/db
 
-ENV TZ=Asia/Tokyo
+COPY utils.py /app/utils.py
+COPY products.json /app/products.json
+COPY main.py /app/main.py
 
-CMD ["python", "scraper/main.py"]
+CMD ["python", "main.py"]
