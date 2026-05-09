@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  maintenance:
+    build: .
+    container_name: price-monitor-maintenance
+    volumes:
+      - ../data:/app/data
+    tty: true
+    stdin_open: true
