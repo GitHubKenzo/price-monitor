@@ -28,6 +28,7 @@ def main():
 
         except Exception as e:
             print(f"[ERROR] {p.name}: {e}")
+    print("[INFO] Scraper finished")
 
 if __name__ == "__main__":
     main()
