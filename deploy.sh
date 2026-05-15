@@ -1,32 +1,32 @@
 #!/bin/bash
 
-PROJECT_DIR="/mnt/f/Projects/price-monitor"
 SERVER="ubuntu@192.168.3.121"
-TARGET_DIR="/opt/price-monitor"
+APP_DIR="/opt/price-monitor/app"
+DOCKER_DIR="/opt/price-monitor/docker"
 
 echo "🚀 Starting deployment..."
-cd $PROJECT_DIR || exit 1
 
-echo "📤 Uploading project files..."
+# 1. アプリ本体を送る
+echo "📤 Uploading application files..."
 scp -r \
   main.py \
   utils.py \
-  docker-compose.yml \
-  Dockerfile \
   products.json \
-  scraper/*.py \
-  scraper/requirements.txt \
-  db/*.py \
-  maintenance \
-  data \
-  $SERVER:$TARGET_DIR
+  scraper \
+  db \
+  Dockerfile \
+  $SERVER:$APP_DIR/
 
+# 2. docker-compose.yml を送る
+echo "📤 Uploading docker-compose.yml..."
+scp docker-compose.yml $SERVER:$DOCKER_DIR/
 
+# 3. Docker Compose 再起動
 echo "🔄 Restarting Docker Compose on server..."
-ssh $SERVER << 'EOF'
+ssh -t $SERVER << 'EOF'
 cd /opt/price-monitor
-/usr/bin/docker compose down
-/usr/bin/docker compose up -d --build
+docker compose down
+docker compose up -d --build
 EOF
 
 echo "✅ Deployment completed successfully!"
