@@ -14,16 +14,10 @@ def load_products_from_json(session, path="products.json"):
             session.commit()
             print(f"[INFO] Added product: {p['name']}")
 
-def notify(message, token_path="line_token.txt"):
-    """【将来の拡張用】LINE/Discord/Slack等の通知を一元管理するダミー実装"""
-    # 現状は line_token.txt を読み込むシンプルな実装
-    with open(token_path, "r") as f:
-        token = f.read().strip()
-
-    import requests
-    url = "https://notify-api.line.me/api/notify"
-    headers = {"Authorization": f"Bearer {token}"}
-    data = {"message": message}
-
-    res = requests.post(url, headers=headers, data=data)
-    print(f"[INFO] LINE Notify status: {res.status_code}")
+def notify(message: str):
+    """
+    ダミー通知関数（将来のLINE通知用）
+    現在は何もせず、安全にスルーする。
+    """
+    print(f"[DUMMY NOTIFY] {message}")
+    return
