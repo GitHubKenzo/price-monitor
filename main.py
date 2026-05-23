@@ -5,6 +5,21 @@ from db.logic import save_price_if_changed
 from scraper.scraper import fetch_price
 from utils import load_products_from_json
 import argparse
+import os
+from dotenv import load_dotenv
+
+# -----------------------------
+# v2.0 対応：.env 読み込み
+# -----------------------------
+load_dotenv()
+
+# -----------------------------
+# v2.0 対応：Fail-Fast
+# -----------------------------
+db_path = os.getenv("PRICE_DB_PATH")
+if not db_path:
+    print("[WARN] PRICE_DB_PATH is not set. Using default /app/data/price.db")
+
 
 def main():
     print(f"[INFO] Start at {datetime.now()}")
@@ -12,7 +27,7 @@ def main():
     session = SessionLocal()
 
     # -----------------------------
-    # ★ C-1 対応：--init のときだけ JSON を読み込む
+    # C-1 対応：--init のときだけ JSON を読み込む
     # -----------------------------
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -48,6 +63,7 @@ def main():
             print(f"[ERROR] {p.name}: {e}")
 
     print("[INFO] Scraper finished")
+
 
 if __name__ == "__main__":
     main()
