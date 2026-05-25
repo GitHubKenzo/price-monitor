@@ -1,0 +1,12 @@
+diff --git a/utils.py b/utils.py
+index 0000000..1111111 100644
+--- a/utils.py
++++ b/utils.py
+@@ -14,10 +14,0 @@
+-def notify(message: str):
+-    """
+-    ダミー通知関数（将来のLINE通知用）
+-    現在は何もせず、安全にスルーする。
+-    """
+-    print(f"[DUMMY NOTIFY] {message}")
+-    return

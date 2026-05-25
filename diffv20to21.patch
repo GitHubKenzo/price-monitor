@@ -1,0 +1,168 @@
+diff --git a/main.py b/app/main.py
+similarity index 100%
+rename from main.py
+rename to app/main.py
+
+diff --git a/utils.py b/app/utils.py
+similarity index 100%
+rename from utils.py
+rename to app/utils.py
+
+diff --git a/products.json b/app/products.json
+similarity index 100%
+rename from products.json
+rename to app/products.json
+
+diff --git a/scraper b/app/scraper
+similarity index 100%
+rename from scraper
+rename to app/scraper
+
+diff --git a/db b/app/db
+similarity index 100%
+rename from db
+rename to app/db
+
+diff --git a/Dockerfile b/docker/Dockerfile
+similarity index 100%
+rename from Dockerfile
+rename to docker/Dockerfile
+
+diff --git a/docker-compose.yml b/docker/docker-compose.yml
+similarity index 100%
+rename from docker-compose.yml
+rename to docker/docker-compose.yml
+
+diff --git a/app/main.py b/app/main.py
+index 1111111..2222222 100644
+--- a/app/main.py
++++ b/app/main.py
+@@ -1,9 +1,9 @@
+-from db.db import init_db, SessionLocal
+-from db.models import Product
+-from db.logic import save_price_if_changed
+-from scraper.scraper import fetch_price
+-from utils import load_products_from_json
++from app.db.db import init_db, SessionLocal
++from app.db.models import Product
++from app.db.logic import save_price_if_changed
++from app.scraper.scraper import fetch_price
++from app.utils import load_products_from_json
+
+
+
+diff --git a/app/notifier/notifier.py b/app/notifier/notifier.py
+new file mode 100644
+--- /dev/null
++++ b/app/notifier/notifier.py
+@@ -0,0 +1,40 @@
++"""
++Notifier module (統合版)
++
++※ LINE Notify は 2025年12月でサービス終了。
++   今後は Slack / Discord / Gmail API などに置き換える前提。
++"""
++
++import os
++import requests
++
++TOKEN = os.getenv("NOTIFY_TOKEN")
++
++def notify(message: str):
++    if not TOKEN:
++        print(f"[NOTIFY] {message}")
++        return
++
++    print(f"[NOTIFY] {message} (TOKEN 使用)")
+
+diff --git a/docker/Dockerfile b/docker/Dockerfile
+index 5555555..6666666 100644
+--- a/docker/Dockerfile
++++ b/docker/Dockerfile
+@@ -1,14 +1,10 @@
+-FROM python:3.10-slim
+-
+-WORKDIR /app
+-
+-COPY scraper/requirements.txt .
+-RUN pip install --no-cache-dir -r requirements.txt
+-
+-COPY ./scraper /app/scraper
+-COPY ./db /app/db
+-COPY utils.py /app/utils.py
+-COPY products.json /app/products.json
+-COPY main.py /app/main.py
+-
+-CMD ["python", "main.py"]
++FROM python:3.10-slim
++
++WORKDIR /app
++
++COPY ./app /app
++RUN pip install --no-cache-dir -r /app/scraper/requirements.txt
++
++CMD ["python", "/app/main.py"]
+
+diff --git a/docker/docker-compose.yml b/docker/docker-compose.yml
+index 7777777..8888888 100644
+--- a/docker/docker-compose.yml
++++ b/docker/docker-compose.yml
+@@ -4,10 +4,10 @@ services:
+   scraper:
+-    build: .
++    build: ./docker
+     container_name: price-monitor-scraper
+     volumes:
+-      - ./scraper:/app/scraper
++      - ./app:/app
+       - ./data:/app/data
+
+diff --git a/deploy.sh b/deploy.sh
+index 9999999..aaaaaaa 100644
+--- a/deploy.sh
++++ b/deploy.sh
+@@ -1,32 +1,32 @@
+ SERVER="ubuntu@192.168.3.121"
+-APP_DIR="/opt/price-monitor/app"
+-DOCKER_DIR="/opt/price-monitor/docker"
++APP_DIR="/opt/price-monitor/app"
++DOCKER_DIR="/opt/price-monitor/docker"
+
+ echo "🚀 Starting deployment..."
+
+-# 1. アプリ本体を送る
++# 1. app ディレクトリを送る
+ echo "📤 Uploading application files..."
+-scp -r \
+-  main.py \
+-  utils.py \
+-  products.json \
+-  scraper \
+-  db \
+-  Dockerfile \
+-  $SERVER:$APP_DIR/
++scp -r app $SERVER:/opt/price-monitor/
+
+ # 2. docker ディレクトリを送る
+ echo "📤 Uploading docker files..."
+-scp docker-compose.yml $SERVER:$DOCKER_DIR/
++scp -r docker $SERVER:/opt/price-monitor/
+
+ # 3. Docker Compose 再起動
+ echo "🔄 Restarting Docker Compose on server..."
+ ssh -t $SERVER << 'EOF'
+ cd /opt/price-monitor
+-docker compose down
+-docker compose up -d --build
++docker compose -f docker/docker-compose.yml down
++docker compose -f docker/docker-compose.yml up -d --build
+ EOF
+
+diff --git a/.env.example b/.env.example
+new file mode 100644
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,5 @@
++# 本番用環境変数テンプレート
++NOTIFY_TOKEN=YOUR_NOTIFY_TOKEN
++TZ=Asia/Tokyo
