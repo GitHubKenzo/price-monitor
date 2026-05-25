@@ -2,12 +2,10 @@ version: "3.8"
 
 services:
   scraper:
-    build: .
+    build: ./docker
     container_name: price-monitor-scraper
     volumes:
-      - ./scraper:/app/scraper
+      - ./app:/app
       - ./data:/app/data
     environment:
       - TZ=Asia/Tokyo
-      # LINE_NOTIFY_TOKEN=xxxxx を使う場合はここに追加
-      # - LINE_NOTIFY_TOKEN=YOUR_TOKEN
