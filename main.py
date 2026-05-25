@@ -1,9 +1,9 @@
-from datetime import datetime
-from db.db import init_db, SessionLocal
-from db.models import Product
-from db.logic import save_price_if_changed
-from scraper.scraper import fetch_price
-from utils import load_products_from_json
+from app.db.db import init_db, SessionLocal
+from app.db.models import Product
+from app.db.logic import save_price_if_changed
+from app.scraper.scraper import fetch_price
+from app.utils import load_products_from_json
+
 import argparse
 
 def main():
