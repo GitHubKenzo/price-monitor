@@ -14,10 +14,3 @@ def load_products_from_json(session, path="products.json"):
             session.commit()
             print(f"[INFO] Added product: {p['name']}")
 
-def notify(message: str):
-    """
-    ダミー通知関数（将来のLINE通知用）
-    現在は何もせず、安全にスルーする。
-    """
-    print(f"[DUMMY NOTIFY] {message}")
-    return
