@@ -2,14 +2,10 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY scraper/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# app ディレクトリを丸ごとコピー
+COPY ./app /app
 
-COPY ./scraper /app/scraper
-COPY ./db /app/db
+# 依存関係インストール
+RUN pip install --no-cache-dir -r /app/scraper/requirements.txt
 
-COPY utils.py /app/utils.py
-COPY products.json /app/products.json
-COPY main.py /app/main.py
-
-CMD ["python", "main.py"]
+CMD ["python", "/app/main.py"]
