@@ -3,6 +3,8 @@ from app.db.models import Product
 from app.db.logic import save_price_if_changed
 from app.scraper.scraper import fetch_price
 from app.utils import load_products_from_json
+from datetime import datetime
+
 
 import argparse
 
