@@ -1,5 +1,5 @@
 import json
-from app.db.models import Product
+from db.models import Product
 
 def load_products_from_json(session, path="products.json"):
     """products.json を読み込み、DB に存在しない商品だけ追加する"""

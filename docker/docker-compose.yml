@@ -11,11 +11,3 @@ services:
       - ../data:/app/data
     environment:
       - TZ=Asia/Tokyo
-
-  testpy:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    command: pytest -v --cov=app --cov-report=html --cov-report=term-missing
-    volumes:
-      - ..:/app
