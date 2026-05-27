@@ -1,3 +1,4 @@
+import sys
 from app.db.db import init_db, SessionLocal
 from app.db.models import Product
 from app.db.logic import save_price_if_changed
@@ -51,5 +52,5 @@ def main():
 
     print("[INFO] Scraper finished")
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
