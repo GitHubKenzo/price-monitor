@@ -1,0 +1,15 @@
+{
+    "terminal.integrated.profiles.linux": {
+        "bash-venv": {
+            "path": "/bin/bash",
+            "args": ["-c", "source .venv/bin/activate; exec bash --login"],
+            "overrideName": true
+        },
+        "bash-default": {
+            "path": "/bin/bash",
+            "args": ["--login"],
+            "overrideName": true
+        }
+    },
+    "terminal.integrated.defaultProfile.linux": "bash-venv"
+}
