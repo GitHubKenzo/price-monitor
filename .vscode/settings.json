@@ -2,7 +2,7 @@
     "terminal.integrated.profiles.linux": {
         "bash-venv": {
             "path": "/bin/bash",
-            "args": ["--login", "-c", "source .venv/bin/activate; echo '[INFO] venv active: $VIRTUAL_ENV'; exec bash"],
+            "args": ["--login", "-c", "source .venv/bin/activate; echo '[INFO] venv active'; exec bash"],
             "overrideName": true
         },
         "bash-default": {
