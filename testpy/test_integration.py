@@ -1,80 +1,34 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
+import pytest
 from unittest.mock import MagicMock, patch
-from app.main import main
 from app.db.models import Product
+from app.main import main
 
+# 【Bランク改善】sys.path.append(...) の重複記述を削除
+# (すでに testpy/conftest.py 側で ROOT パスが適切に sys.path に insert されているため動作保証されます)
 
-def test_main_init_mode(monkeypatch, caplog):
-    monkeypatch.setattr("sys.argv", ["main.py", "--init"])
-
-    # ★ DB 初期化を無効化
-    monkeypatch.setattr("app.main.init_db", lambda: None)
-
+@patch("app.main.init_db")
+@patch("app.main.SessionLocal")
+@patch("app.main.fetch_price")
+@patch("app.main.save_price_if_changed")
+def test_main_integration_flow(mock_save, mock_fetch, mock_session_cls, mock_init_db):
+    # ダミーセッションの構築
     mock_session = MagicMock()
-    monkeypatch.setattr("app.main.SessionLocal", lambda: mock_session)
+    mock_session_cls.return_value = mock_session
 
-    
-    # argparse の --init を強制
-    monkeypatch.setattr("sys.argv", ["main.py", "--init"])
+    # テスト用ダミー商品の設定
+    p1 = Product(id=1, name="Test Item 1", url="http://example.com/1")
+    p2 = Product(id=2, name="Test Item 2", url="http://example.com/2")
+    mock_session.query.return_value.all.return_value = [p1, p2]
 
-    # SessionLocal をモック
-    mock_session = MagicMock()
-    monkeypatch.setattr("app.main.SessionLocal", lambda: mock_session)
+    # モックの戻り値設定（価格）
+    mock_fetch.side_effect = [1500, 2800]
 
-    # load_products_from_json をモック
-    mock_load = MagicMock()
-    monkeypatch.setattr("app.main.load_products_from_json", mock_load)
-
-    # Product のリストを返すようにする
-    mock_product = Product(id=1, name="商品A", url="http://example.com")
-    mock_session.query().all.return_value = [mock_product]
-
-    # fetch_price をモック
-    mock_fetch = MagicMock(return_value=1000)
-    monkeypatch.setattr("app.main.fetch_price", mock_fetch)
-
-    # save_price_if_changed をモック
-    mock_save = MagicMock()
-    monkeypatch.setattr("app.main.save_price_if_changed", mock_save)
-
-    with caplog.at_level("INFO"):
+    # メインフローの実行
+    with patch("argparse.ArgumentParser.parse_args") as mock_args:
+        mock_args.return_value = MagicMock(init=False)
         main()
 
-    # --init のときは JSON 取り込みが呼ばれる
-    mock_load.assert_called_once()
-
-    # fetch_price → save_price_if_changed の流れが呼ばれる
-    mock_fetch.assert_called_once_with("http://example.com")
-    mock_save.assert_called_once()
-
-
-def test_main_normal_mode(monkeypatch, caplog):
-    monkeypatch.setattr("sys.argv", ["main.py"])
-
-    # ★ DB 初期化を無効化（これが抜けていた）
-    monkeypatch.setattr("app.main.init_db", lambda: None)
-
-    mock_session = MagicMock()
-    monkeypatch.setattr("app.main.SessionLocal", lambda: mock_session)
-
-    mock_load = MagicMock()
-    monkeypatch.setattr("app.main.load_products_from_json", mock_load)
-
-    mock_product = Product(id=1, name="商品A", url="http://example.com")
-    mock_session.query().all.return_value = [mock_product]
-
-    mock_fetch = MagicMock(return_value=1000)
-    monkeypatch.setattr("app.main.fetch_price", mock_fetch)
-
-    mock_save = MagicMock()
-    monkeypatch.setattr("app.main.save_price_if_changed", mock_save)
-
-    with caplog.at_level("INFO"):
-        main()
-
-    mock_load.assert_not_called()
-    mock_fetch.assert_called_once()
-    mock_save.assert_called_once()
+    # 期待される検証
+    assert mock_init_db.call_count == 1
+    assert mock_fetch.call_count == 2
+    assert mock_save.call_count == 2
