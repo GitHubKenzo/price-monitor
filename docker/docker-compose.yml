@@ -6,8 +6,6 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: price-monitor-scraper
-    volumes:
-      - ../app:/app
-      - ../data:/app/data
+    working_dir: /workspace
     environment:
       - TZ=Asia/Tokyo

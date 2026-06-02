@@ -1,31 +1,31 @@
 FROM python:3.10-slim
 
 # 作業ディレクトリ
-WORKDIR /app
+WORKDIR /workspace
 
 # -------------------------
 # 1. 本番用依存のインストール
 # -------------------------
 # scraper の requirements をコピー
-COPY ../app/scraper/requirements.txt /app/scraper/requirements.txt
+COPY ../app/scraper/requirements.txt /workspace/app/scraper/requirements.txt
 
 # 本番依存をインストール
-RUN pip install --no-cache-dir -r /app/scraper/requirements.txt
+RUN pip install --no-cache-dir -r /workspace/app/scraper/requirements.txt
 
 # -------------------------
 # 2. テスト用依存のインストール
 # -------------------------
 # testpy の requirements をコピー
-COPY ../tests/requirements.txt /app/tests/requirements.txt
+COPY ../tests/requirements.txt /workspace/tests/requirements.txt
 
 # テスト依存（pytest など）をインストール
-RUN pip install --no-cache-dir -r /app/tests/requirements.txt
+RUN pip install --no-cache-dir -r /workspace/tests/requirements.txt
 
 # -------------------------
 # 3. アプリ本体をコピー
 # -------------------------
-COPY ../app /app
-COPY ../tests /app/tests
+COPY ../app /workspace/app
+COPY ../tests /workspace/tests
 
 # デフォルト CMD（pytest 用）
 #CMD ["pytest", "-v", "--cov=app", "--cov-report=html", "--cov-report=term-missing"]

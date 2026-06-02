@@ -1,5 +1,6 @@
 import sys
 import logging
+import requests
 from app import main
 
 
@@ -17,20 +18,20 @@ class OneProductSession:
         pass
 
 
-def test_main_loop_exception(monkeypatch, caplog):
+def test_main_retry_failed(monkeypatch, caplog):
     monkeypatch.setattr(main, "init_db", lambda: None)
     monkeypatch.setattr(main, "SessionLocal", lambda: OneProductSession())
 
-    # fetch_price が例外を投げる
-    monkeypatch.setattr(
-        main,
-        "fetch_price",
-        lambda url: (_ for _ in ()).throw(Exception("boom"))
-    )
+    def fake_fetch(url):
+        raise requests.exceptions.Timeout("timeout")
+
+    monkeypatch.setattr(main, "fetch_price", fake_fetch)
+
+    monkeypatch.setattr(main.time, "sleep", lambda x: None)
 
     monkeypatch.setattr(sys, "argv", ["main.py"])
 
     with caplog.at_level(logging.ERROR):
         main.main()
 
-    assert "Error checking X: boom" in caplog.text
+    assert "after retry" in caplog.text

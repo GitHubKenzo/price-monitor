@@ -2,3 +2,6 @@ pytest
 pytest-cov
 requests-mock
 freezegun
+
+ruff
+black

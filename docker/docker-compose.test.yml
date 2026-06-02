@@ -17,6 +17,6 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.test
     command: pytest -v --cov=app --cov-report=html --cov-report=term-missing
+    working_dir: /workspace
     volumes:
-      - ../app:/app/app
-      - ../tests:/app/tests
+      - ..:/workspace
