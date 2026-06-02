@@ -1,8 +1,8 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from app.scraper.scraper import fetch_price
+import pytest
 
 def test_fetch_price_meta(monkeypatch):
     """meta[itemprop=price] がある場合のテスト"""
@@ -75,7 +75,6 @@ def test_fetch_price_fallback(monkeypatch):
     price = fetch_price("http://example.com")
     assert price == 3456
 
-import pytest
 
 def test_fetch_price_not_found(monkeypatch):
     """価格が見つからない場合に ValueError が発生するテスト"""

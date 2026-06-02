@@ -1,7 +1,5 @@
 import json
-import builtins
 from app.utils import load_products_from_json
-from app.db.models import Product
 
 class DummyQuery:
     """session.query(Product).filter(...).first() をモックするためのクラス"""

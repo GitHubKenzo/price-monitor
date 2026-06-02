@@ -6,9 +6,6 @@ from unittest.mock import MagicMock
 from app.db.logic import save_price_if_changed
 from app.db.models import PriceHistory
 
-from unittest.mock import MagicMock
-from app.db.logic import save_price_if_changed
-from app.db.models import PriceHistory
 def test_save_price_first_time():
     # モック session
     session = MagicMock()

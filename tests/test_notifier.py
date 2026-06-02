@@ -2,9 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import builtins
 from app.scraper import notifier
-import requests
 
 def test_notify_dummy_mode(monkeypatch, capsys):
     # LINE_TOKEN を未設定にする

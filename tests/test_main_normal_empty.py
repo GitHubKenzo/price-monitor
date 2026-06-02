@@ -1,6 +1,5 @@
 import sys
 from app import main
-import app.db.db as db_module
 
 class EmptySession:
     def query(self, model):

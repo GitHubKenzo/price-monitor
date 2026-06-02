@@ -12,7 +12,6 @@ echo "📤 Uploading application files..."
 
 scp -r app $SERVER:$TARGET_DIR/
 scp -r docker $SERVER:$TARGET_DIR/
-scp docker-compose.yml $SERVER:$TARGET_DIR/
 
 # testpy / maintenance / data は送らない
 # data は本番永続化領域なので絶対に上書き禁止

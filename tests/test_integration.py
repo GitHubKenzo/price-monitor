@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock, patch
 from app.db.models import Product
 from app.main import main

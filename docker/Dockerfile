@@ -1,22 +1,22 @@
 FROM python:3.10-slim
 
-# 作業ディレクトリ
 WORKDIR /workspace
 
 # -------------------------
-# 1. 本番用依存のインストール（キャッシュ効率化）
+# 依存インストール
 # -------------------------
-# 依存定義ファイルだけを先にコピーして、ソースコード変更時にレイヤーキャッシュが切れるのを防ぐ
-COPY ../app/scraper/requirements.txt /workspace/app/scraper/requirements.txt
+COPY app/scraper/requirements.txt /workspace/app/scraper/requirements.txt
 
-# 本番依存をインストール
 RUN pip install --no-cache-dir -r /workspace/app/scraper/requirements.txt
 
 # -------------------------
-# 2. アプリ本体をコピー
+# アプリ本体
 # -------------------------
-# プロジェクトルート（.）基準のビルドコンテキストから、app内をクリーンに転送
-COPY ../app /workspace/app
+COPY app /workspace/app
 
-# デフォルト CMD（scraper 用）
+# Python import 安定化
+ENV PYTHONPATH=/workspace
+RUN mkdir -p /workspace/data
+
+# デフォルト起動
 CMD ["python", "-m", "app.main"]
