@@ -16,15 +16,17 @@ RUN pip install --no-cache-dir -r /app/scraper/requirements.txt
 # 2. テスト用依存のインストール
 # -------------------------
 # testpy の requirements をコピー
-COPY ../testpy/requirements.txt /app/testpy/requirements.txt
+COPY ../tests/requirements.txt /app/tests/requirements.txt
 
 # テスト依存（pytest など）をインストール
-RUN pip install --no-cache-dir -r /app/testpy/requirements.txt
+RUN pip install --no-cache-dir -r /app/tests/requirements.txt
 
 # -------------------------
 # 3. アプリ本体をコピー
 # -------------------------
 COPY ../app /app
+COPY ../tests /app/tests
 
 # デフォルト CMD（pytest 用）
-CMD ["pytest", "-v", "--cov=app", "--cov-report=html", "--cov-report=term-missing"]
+#CMD ["pytest", "-v", "--cov=app", "--cov-report=html", "--cov-report=term-missing"]
+CMD ["pytest", "-v"]

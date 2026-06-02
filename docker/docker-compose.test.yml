@@ -1,16 +1,16 @@
 version: "3.8"
 
 services:
-  scraper:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: price-monitor-scraper
-    volumes:
-      - ../app:/app
-      - ../data:/app/data
-    environment:
-      - TZ=Asia/Tokyo
+ # scraper:
+ #   build:
+ #     context: ..
+ #     dockerfile: docker/Dockerfile
+ #   container_name: price-monitor-scraper
+ #   volumes:
+ #     - ../app:/app
+ #     - ../data:/app/data
+ #   environment:
+ #     - TZ=Asia/Tokyo
 
   testpy:
     build:
@@ -18,4 +18,5 @@ services:
       dockerfile: docker/Dockerfile.test
     command: pytest -v --cov=app --cov-report=html --cov-report=term-missing
     volumes:
-      - ..:/app
+      - ../app:/app/app
+      - ../tests:/app/tests
