@@ -1,4 +1,14 @@
-data/
-scraper/__pycache__/
+# Python
+__pycache__/
 *.pyc
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# venv
 .venv/
+
+# data
+data/
