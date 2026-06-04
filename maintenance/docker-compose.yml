@@ -5,6 +5,6 @@ services:
     build: .
     container_name: price-monitor-maintenance
     volumes:
-      - ../data:/app/data
+      - ../data:/workspace/data
     tty: true
     stdin_open: true
