@@ -1,16 +1,17 @@
 import time
 import requests
-import logging
+#import logging
 from app.db.db import init_db, SessionLocal
 from app.db.models import Product
-from app.db.logic import save_price_if_changed
+from app.db.logic import save_price
 from app.scraper.scraper import fetch_price
 from app.utils import load_products_from_json
 from datetime import datetime
+from app.logger import logger
 import argparse
 
 # ロガーの設定（既存のロギング環境に合わせる）
-logger = logging.getLogger("price_monitor")
+#logger = logging.getLogger("price_monitor")
 
 def main():
     print(f"[INFO] Start at {datetime.now()}")
@@ -66,8 +67,7 @@ def main():
         if price is not None:
             print(f"[INFO] {p.name}: {price} 円")
             # 価格変動ロジック（db/logic.py）
-            save_price_if_changed(session, p, price)
-
+            save_price(session, p, price)
     print("[INFO] Scraper finished")
 
 if __name__ == "__main__":  # pragma: no cover

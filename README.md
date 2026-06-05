@@ -1,89 +1,184 @@
-# Yahooショッピング価格監視システム  
-Yahooショッピングの商品価格を自動で取得し、価格変動を検知して記録するシステムです。  
-Docker により環境差異を排除し、どの環境でも同じ動作を再現できます。
+# Yahooショッピング価格監視システム
+
+Yahooショッピングの商品価格を定期監視し、
+価格変動を検知して履歴保存および通知を行うシステムです。
+
+Docker を利用して開発環境と本番環境の差異を排除し、
+Hyper-V Ubuntu 上で安定稼働することを目的としています。
 
 ---
 
-## 🚀 特徴
+## 🚀 主な機能
 
-### ✔ Yahooショッピングの HTML 構造に完全対応（堅牢な価格抽出ロジック）
-Yahooショッピングは商品ページごとに HTML 構造が異なります。  
-本システムでは **構造化データ（meta[itemprop="price"]）を最優先**し、  
-さらに複数の CSS セレクタを組み合わせた価格抽出ロジックを実装しています。
+### ✔ Yahooショッピング価格取得
 
-価格抽出の優先順位：
-1. `<meta itemprop="price">`  
-2. `itemprop="price"`  
-3. 汎用クラス（`.elPrice`, `.price`, `.Value` など）
+商品ページから価格を取得します。
 
-これにより、**ポイント数や割引率の誤取得を完全排除**し、  
-Yahooショッピングのテンプレート差異にも強い安定したスクレイピングを実現しています。
+以下の優先順位で価格を抽出します。
 
-### ✔ 価格取得の安定性を最大化（リトライ機構実装）
-ネットワーク瞬断やタイムアウトが発生した場合、**5秒待機後に自動で再試行（リトライ）**を行います。  
-これにより、一時的な接続エラーによる停止を防ぎ、常時安定した監視運用をサポートします。
+1. JSON-LD（offers.price）
+2. JSON-LD（offers.lowPrice）
+3. meta[itemprop="price"]
+4. itemprop="price"
+5. 汎用価格クラス検索
 
-### ✔ 将来的な通知拡張を見据えた設計
-現在の LINE 通知機能は、将来的な本格運用への拡張を前提とした「ダミー実装（インターフェース先行型）」となっています。  
-通知ロジックが独立しているため、今後 Slack や Discord、メール通知などへの切り替え・追加が容易に行える設計です。
+関連商品価格やポイント数などの誤取得を防止するロジックを実装しています。
 
 ---
 
-## ⚙️ セットアップ手順・運用マニュアル
+### ✔ 価格変動監視
 
-### 1. 前提環境
-Docker および Docker Compose がインストールされている環境で実行してください。
+前回取得価格と比較し、
+価格変動が発生した場合のみ履歴へ保存します。
 
-### 2. 環境変数設定
-本番環境で LINE 通知を利用する場合、`.env` ファイル等に以下の環境変数を設定してください。
-- `LINE_NOTIFY_TOKEN`: LINE Notify の発行トークン
+保存先：
 
-### 3. 定時実行（Cron）設定
-本システムは Cron による定時起動を前提としています。ホスト側の Crontab に以下の設定を登録してください。
-
-```bash
-# 毎時0分に価格監視を実行する例
-0 * * * * cd /path/to/price-monitor && docker-compose run --rm app python main.py >> /var/log/price-monitor.log 2>&1
-```
-
-### 4. 初回実行（初期化）
-初回のみ、以下のコマンドでデータベースの初期構築を行ってください。
-```bash
-docker-compose run --rm app python main.py --init
-```
+- SQLite
+- price_history テーブル
 
 ---
 
-## 📁 ディレクトリ構造
+### ✔ 通知機能
+
+価格変動検知時に通知を送信します。
+
+通知処理は notifier モジュールとして独立しており、
+将来的な通知先追加にも対応しやすい構成です。
+
+---
+
+### ✔ 通信リトライ
+
+一時的な通信エラー発生時は再試行します。
+
+- requests例外対応
+- HTTPエラー対応
+- 一定時間待機後リトライ
+
+---
+
+## 🧪 品質保証
+
+pytest による自動テストを実施しています。
+
+現在の結果：
+
+- 29 Tests Passed
+- Coverage 100%
+
+対象：
+
+- スクレイパー
+- DB保存処理
+- 通知処理
+- メイン処理
+- リトライ処理
+- 初期化処理
+- エラー処理
+
+---
+
+## 📁 Git管理構成
 
 ```text
 price-monitor/
 ├── app/
-│   ├── scraper/       # スクレイピングロジック・LINE通知
-│   ├── db/            # DBモデル・比較保存ロジック
-│   └── main.py        # メイン実行フロー
-├── tests/             # 網羅的なテストコード
-├── data/              # SQLite データベース
-├── Dockerfile
-├── docker-compose.yml
+│   ├── db/
+│   ├── scraper/
+│   ├── main.py
+│   └── utils.py
+├── tests/
+├── docker/
+├── data/
+├── deploy.sh
+├── requirements.txt
+├── requirements-prod.txt
+├── products.json
 └── README.md
 ```
 
 ---
 
-## 🔧 技術スタック
+## 🖥 本番配置構成
 
-- **Python 3.x**
-- **BeautifulSoup4 / lxml**（堅牢な価格抽出）
-- **SQLAlchemy / SQLite**（軽量かつ確実な履歴保存）
-- **requests**（通信およびリトライ制御）
-- **pytest**（テスト駆動開発による品質保証）
+```text
+/opt/price-monitor/
+├── app/
+├── docker/
+├── data/
+├── logs/
+└── app/.env
+```
 
 ---
 
-## 📝 修正履歴
+## ⚙️ 開発環境セットアップ
 
-- **2026/06/03**: クーロン運用、リトライ機構、および拡張を見据えた通知設計のドキュメント化。
-    - 通知機能の設計意図（将来的な拡張性）を追記。
-    - セットアップ手順内に Crontab 設定例および運用フローを追記。
-    - ディレクトリ構造および技術スタックを最新構成に合わせて最適化。
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+---
+
+## ⚙️ テスト実行
+
+### ローカル
+
+```bash
+pytest -x -v
+```
+
+### Docker
+
+```bash
+docker compose -f docker/docker-compose.test.yml up --abort-on-container-exit
+```
+
+---
+
+## 🚀 デプロイ
+
+deploy.sh を実行します。
+
+```bash
+./deploy.sh
+```
+
+deploy.sh は以下を実施します。
+
+1. pytest実行
+2. app/同期
+3. docker/同期
+4. 本番Docker再ビルド
+5. 本番Docker再起動
+
+---
+
+## 🔧 使用技術
+
+- Python 3.10
+- BeautifulSoup4
+- lxml
+- SQLAlchemy
+- SQLite
+- requests
+- pytest
+- Docker
+- Docker Compose
+
+---
+
+## 📝 更新履歴
+
+### 2026-06-05
+
+- JSON-LD価格抽出対応
+- lowPrice対応
+- 関連商品価格誤取得防止
+- テスト29件整備
+- Coverage 100%達成
+- Dockerテスト環境整備
+- deploy.sh改善

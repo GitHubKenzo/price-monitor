@@ -1,9 +1,12 @@
+version: "3.8"
+
 services:
   scraper:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: price-monitor-scraper
+
     working_dir: /workspace
 
     environment:
@@ -12,6 +15,10 @@ services:
       - PYTHONPATH=/workspace
 
     volumes:
+      - ../app:/workspace/app
       - ../data:/workspace/data
+      - ../logs:/workspace/logs   # ← 追加
+    # ★ ホストの UID/GID を自動同期（WSL/Hyper-V/別サーバすべて対応）
+    user: "${UID_OVERRIDE}:${GID_OVERRIDE}"
 
     command: python -m app.main

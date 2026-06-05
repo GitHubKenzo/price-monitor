@@ -1,32 +1,38 @@
 FROM python:3.10-slim
 
-# 作業ディレクトリ
+RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m appuser
+
 WORKDIR /workspace
 
 # -------------------------
-# 1. 本番用依存のインストール
+# 1. 本番依存
 # -------------------------
-# scraper の requirements をコピー
 COPY ../app/scraper/requirements.txt /workspace/app/scraper/requirements.txt
-
-# 本番依存をインストール
 RUN pip install --no-cache-dir -r /workspace/app/scraper/requirements.txt
 
 # -------------------------
-# 2. テスト用依存のインストール
+# 2. テスト依存
 # -------------------------
-# testpy の requirements をコピー
 COPY ../tests/requirements.txt /workspace/tests/requirements.txt
-
-# テスト依存（pytest など）をインストール
 RUN pip install --no-cache-dir -r /workspace/tests/requirements.txt
 
 # -------------------------
-# 3. アプリ本体をコピー
+# 3. アプリ本体
 # -------------------------
 COPY ../app /workspace/app
 COPY ../tests /workspace/tests
 
-# デフォルト CMD（pytest 用）
-#CMD ["pytest", "-v", "--cov=app", "--cov-report=html", "--cov-report=term-missing"]
-CMD ["pytest", "-v"]
+ENV PYTHONPATH=/workspace
+
+# ★ coverage の DB を bind mount の外へ
+ENV COVERAGE_FILE=/tmp/.coverage
+ENV COVERAGE_HTML_DIR=/tmp/htmlcov
+
+
+RUN mkdir -p /workspace/tmp
+
+USER appuser
+
+CMD ["pytest"]
