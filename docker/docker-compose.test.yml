@@ -1,22 +1,19 @@
-version: "3.8"
-
 services:
- # scraper:
- #   build:
- #     context: ..
- #     dockerfile: docker/Dockerfile
- #   container_name: price-monitor-scraper
- #   volumes:
- #     - ../app:/app
- #     - ../data:/app/data
- #   environment:
- #     - TZ=Asia/Tokyo
-
   testpy:
     build:
       context: ..
       dockerfile: docker/Dockerfile.test
-    command: pytest -v --cov=app --cov-report=html --cov-report=term-missing
+
     working_dir: /workspace
+
+    environment:
+      - COVERAGE_FILE=/tmp/.coverage
+      - COVERAGE_HTML_DIR=/tmp/htmlcov
+
+    command: pytest -v --cov=app --cov-report=html --cov-report=term-missing
+
     volumes:
-      - ..:/workspace
+      - ../app:/workspace/app
+      - ../tests:/workspace/tests
+
+    user: "${UID_OVERRIDE}:${GID_OVERRIDE}"

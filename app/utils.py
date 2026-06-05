@@ -1,7 +1,10 @@
 import json
 from app.db.models import Product
+from pathlib import Path
+
 
 def load_products_from_json(session, path="products.json"):
+    path = Path(__file__).parent / "products.json"
     """products.json を読み込み、DB に存在しない商品だけ追加する"""
     with open(path, "r", encoding="utf-8") as f:
         products = json.load(f)
